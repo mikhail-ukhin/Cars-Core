@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.SpaServices.Webpack;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using AutoMapper;
 
 namespace CarsCore
 {
@@ -28,6 +29,7 @@ namespace CarsCore
             services.AddDbContext<CarsDbContext>(options => {
                 options.UseSqlServer(Configuration.GetConnectionString("Default"));
             });
+            services.AddAutoMapper();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
