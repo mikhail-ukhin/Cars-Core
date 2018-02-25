@@ -10,6 +10,7 @@ namespace CarsCore.Mapping
          {
              CreateMap<Make, MakeResource>();
              CreateMap<Model, ModelResource>();
+             CreateMap<Feature, FeatureResource>();
          }
     }
 }
