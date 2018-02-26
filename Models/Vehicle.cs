@@ -11,7 +11,7 @@ namespace CarsCore.Models
         public int Id { get; set; }
         public int ModelId { get; set; }
         public Model Model { get; set; }
-        public bool IsReqistered { get; set; }
+        public bool IsRegistered { get; set; }
 
         [Required]
         [StringLength(255)]

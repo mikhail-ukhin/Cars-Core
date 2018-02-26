@@ -20,6 +20,12 @@ namespace CarsCore.Controllers
             _mapper = mapper;
         }
 
+        [HttpPost("/api/vehicle")]
+        public IActionResult CreateVehicle([FromBody]VehicleResource vehicleResource) {
+            return Ok(_mapper.Map<VehicleResource,Vehicle>(vehicleResource));
+        }
+
+
         [HttpGet("/api/vehicle/features")]
         public async Task<List<FeatureResource>> GetFeatures()
         {
