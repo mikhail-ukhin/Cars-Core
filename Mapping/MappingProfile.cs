@@ -13,12 +13,16 @@ namespace CarsCore.Mapping
             CreateMap<Model, ModelResource>();
             CreateMap<Feature, FeatureResource>();
 
-            CreateMap<VehicleResource, Vehicle>()
-            .ForMember(v => v.IsRegistered, opt => opt.MapFrom(vr => vr.IsRegistered))
+            CreateMap<Vehicle, VehicleResource>()
+            .ForMember(dest => dest.Contact, input => input.MapFrom(vr => new ContactResource() { Name = vr.ContactName, Email = vr.ContactEmail, Phone = vr.ContactPhone }))
+            .ForMember(v => v.Features, opt => opt.MapFrom(vr => vr.Features.Select(f => f.FeatureId)))
+
+            .ReverseMap()
+            
             .ForMember(v => v.ContactName, opt => opt.MapFrom(vr => vr.Contact.Name))
             .ForMember(v => v.ContactEmail, opt => opt.MapFrom(vr => vr.Contact.Email))
             .ForMember(v => v.ContactPhone, opt => opt.MapFrom(vr => vr.Contact.Phone))
-            .ForMember(v => v.Features, opt => opt.MapFrom(vr => vr.Features.Select(id => new VehicleFeature() { FeatureId = id })));
+            .ForMember(v => v.Features, opt => opt.MapFrom(vr => vr.Features.Select(f => new VehicleFeature() { FeatureId = f })));
         }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -21,8 +22,15 @@ namespace CarsCore.Controllers
         }
 
         [HttpPost("/api/vehicle")]
-        public IActionResult CreateVehicle([FromBody]VehicleResource vehicleResource) {
-            return Ok(_mapper.Map<VehicleResource,Vehicle>(vehicleResource));
+        public async Task<IActionResult> CreateVehicle([FromBody]VehicleResource vehicleResource) {
+
+            var vehicle = _mapper.Map<VehicleResource,Vehicle>(vehicleResource);
+            vehicle.LastUpdate = DateTime.Now;
+
+            await _context.Vehicles.AddAsync(vehicle);
+            await _context.SaveChangesAsync();
+
+            return Ok(_mapper.Map<Vehicle, VehicleResource>(vehicle));
         }
 
 
