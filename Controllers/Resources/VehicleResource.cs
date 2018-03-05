@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using CarsCore.Models;
 
@@ -13,6 +14,7 @@ namespace CarsCore.Controllers.Resources
         public bool IsRegistered { get; set; }
         public IList<int> Features { get; set; }
 
+        [Required]
         public ContactResource Contact { get; set; }
 
         public VehicleResource()
