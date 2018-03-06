@@ -11,13 +11,19 @@ namespace CarsCore.Mapping
         public MappingProfile()
         {
             CreateMap<Make, MakeResource>();
-            CreateMap<Model, ModelResource>();
-            CreateMap<Feature, FeatureResource>();
+            CreateMap<Make, KeyValuePairResource>();
+            CreateMap<Model, KeyValuePairResource>();
+            CreateMap<Feature, KeyValuePairResource>();
 
             CreateMap<Vehicle, VehicleResource>()
+            .ForMember(vr => vr.Contact, input => input.MapFrom(v => new ContactResource() { Name = v.ContactName, Email = v.ContactEmail, Phone = v.ContactPhone }))
+            .ForMember(vr => vr.Features, opt => opt.MapFrom(v => v.Features.Select(vf => new KeyValuePairResource() { Id = vf.Feature.Id, Name = vf.Feature.Name })))
+            .ForMember(vr => vr.Make, opt => opt.MapFrom(v => v.Model.Make));
 
-            .ForMember(dest => dest.Contact, input => input.MapFrom(vr => new ContactResource() { Name = vr.ContactName, Email = vr.ContactEmail, Phone = vr.ContactPhone }))
-            .ForMember(v => v.Features, opt => opt.MapFrom(vr => vr.Features.Select(f => f.FeatureId)))
+            CreateMap<Vehicle, SaveVehicleResource>()
+
+            .ForMember(dest => dest.Contact, opt => opt.MapFrom(vr => new ContactResource() { Name = vr.ContactName, Email = vr.ContactEmail, Phone = vr.ContactPhone }))
+            .ForMember(vr => vr.Features, opt => opt.MapFrom(v => v.Features.Select(vf => new KeyValuePairResource() { Id = vf.Feature.Id, Name = vf.Feature.Name })))
 
             .ReverseMap()
 

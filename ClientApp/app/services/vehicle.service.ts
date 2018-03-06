@@ -8,12 +8,12 @@ export class VehicleService {
   constructor(private http: Http) { }
 
   getMakes() {
-    return this.http.get('/api/vehicle/makes').map(
+    return this.http.get('/api/vehicles/makes').map(
       result => result.json()
     );
   }
 
   getFeatures() {
-    return this.http.get("/api/vehicle/features").map(result => result.json());
+    return this.http.get("/api/vehicles/features").map(result => result.json());
   }
 }

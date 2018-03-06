@@ -15,18 +15,18 @@ namespace CarsCore.Controllers
     /// Контроллер с методами для авто
     /// </summary>
     [Route("/api/[controller]")]
-    public class VehicleController : Controller
+    public class VehiclesController : Controller
     {
         private readonly CarsDbContext _context;
         private readonly IMapper _mapper;
 
-        public VehicleController(CarsDbContext context, IMapper mapper)
+        public VehiclesController(CarsDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
         }
 
-         /// <summary>
+        /// <summary>
         /// Получить список функций для авто
         /// </summary>
         /// <returns>
@@ -42,7 +42,7 @@ namespace CarsCore.Controllers
             if (!features.Any())
                 return NotFound();
 
-            return Ok(_mapper.Map<List<Feature>, List<FeatureResource>>(features));
+            return Ok(_mapper.Map<List<Feature>, List<KeyValuePairResource>>(features));
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace CarsCore.Controllers
         /// <response code="500">Информации об исключении</response>
         /// </returns>
         [HttpPost]
-        public async Task<IActionResult> CreateVehicle([FromBody]VehicleResource vehicleResource)
+        public async Task<IActionResult> CreateVehicle([FromBody]SaveVehicleResource vehicleResource)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -83,18 +83,16 @@ namespace CarsCore.Controllers
 
             if (model == null)
             {
-                ModelState.AddModelError("ModelId", "Неверный номер модели");
-
-                return BadRequest(ModelState);
+                return NotFound();
             }
 
-            var vehicle = _mapper.Map<VehicleResource, Vehicle>(vehicleResource);
+            var vehicle = _mapper.Map<SaveVehicleResource, Vehicle>(vehicleResource);
             vehicle.LastUpdate = DateTime.Now;
 
             await _context.Vehicles.AddAsync(vehicle);
             await _context.SaveChangesAsync();
 
-            return Ok(_mapper.Map<Vehicle, VehicleResource>(vehicle));
+            return Ok(_mapper.Map<Vehicle, SaveVehicleResource>(vehicle));
         }
 
         /// <summary>
@@ -108,7 +106,7 @@ namespace CarsCore.Controllers
         /// <response code="500">Информации об исключении</response>
         /// </returns>
         [HttpPut("{vehicleId:int}")]
-        public async Task<IActionResult> UpdateVehicle(int vehicleId, [FromBody]VehicleResource vehicleResource)
+        public async Task<IActionResult> UpdateVehicle(int vehicleId, [FromBody]SaveVehicleResource vehicleResource)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -119,17 +117,57 @@ namespace CarsCore.Controllers
 
             if (vehicle == null)
             {
-                ModelState.AddModelError("vehicleId", "Неверный параметр");
-
-                return BadRequest(ModelState);
+                return NotFound();
             }
 
-            _mapper.Map<VehicleResource, Vehicle>(vehicleResource, vehicle);
+            _mapper.Map<SaveVehicleResource, Vehicle>(vehicleResource, vehicle);
             await _context.SaveChangesAsync();
 
             return Ok(vehicleId);
         }
 
-       
+        /// <summary>
+        /// Удалить запись об автомобиле
+        /// </summary>
+        /// <param name="vehicleId">Id аавтомобиля</param>
+        /// <returns>Id автомобиля</returns>
+        [HttpDelete("{vehicleId:int}")]
+        public async Task<IActionResult> DeleteVehicle(int vehicleId)
+        {
+            var vehicle = await _context.Vehicles.FindAsync(vehicleId);
+
+            if (vehicle == null)
+            {
+                return NotFound();
+            }
+
+            _context.Remove(vehicle);
+            await _context.SaveChangesAsync();
+
+            return Ok(vehicleId);
+        }
+
+        /// <summary>
+        /// Получить информацию об автомобиле по id
+        /// </summary>
+        /// <param name="vehicleId">Id автомобиля</param>
+        /// <returns>Dto объект, содержащий информацию об автомобиле</returns>
+        [HttpGet("{vehicleId:int}")]
+        public async Task<IActionResult> GetVehicle(int vehicleId)
+        {
+            var vehicle = await _context.Vehicles
+                .Include(v => v.Features)
+                .ThenInclude(vf => vf.Feature)
+                .Include(v => v.Model)
+                .ThenInclude(m => m.Make)
+                .SingleOrDefaultAsync(v => v.Id == vehicleId);
+
+            if (vehicle == null)
+                return NotFound();
+
+            var vehicleResource = _mapper.Map<Vehicle, VehicleResource>(vehicle);
+
+            return Ok(vehicleResource);
+        }
     }
 }
