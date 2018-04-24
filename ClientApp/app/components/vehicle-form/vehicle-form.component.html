@@ -1,57 +1,59 @@
 <h1>Добавить автомобиль:</h1>
 
 <div style="margin:40px 0 0 0">
-  <form>
+    <p> {{ vehicle | json }}</p>
+  <form (ngSubmit)="onSubmit()">
     <div class="form-group">
       <label for="make">Производитель</label>
-      <select id="make" name="make" class="form-control" (change)="onMakeChange()" [(ngModel)]="vehicle.make">
+      <select id="make" name="makeId" class="form-control" (change)="onMakeChange()" [(ngModel)]="vehicle.makeId">
         <option value="" disabled selected>Выберите производителя</option>
         <option *ngFor="let make of makes" [value]="make.id">{{make.name}}</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="model">Модель</label>
+      <select id="model" class="form-control" [(ngModel)]="vehicle.modelId" name="modelId">
+        <option value="" disabled selected>Выберите модель</option>
+        <option *ngFor="let model of models" [value]="model.id">{{model.name}}</option>
       </select>
     </div>
 
     <p><b>Зарегистрирован ли автомобиль?</b></p>
     <div class="radio">
       <label for="registered">
-        <input type="radio" name="isRegistered" value="true" id="registered"> Да
+        <input type="radio" name="isRegistered" value="true" id="registered" [(ngModel)]="vehicle.isRegistered"> Да
       </label>
     </div>
 
     <div class="radio">
       <label for="notRegistered">
-        <input type="radio" name="isRegistered" value="false" id="registered"> Нет
+        <input type="radio" name="isRegistered" value="false" id="notRegistered" [(ngModel)]="vehicle.isRegistred"> Нет
       </label>
-    </div>
-
-    <div class="form-group">
-      <label for="model">Модель</label>
-      <select id="model" class="form-control">
-        <option value="" disabled selected>Выберите модель</option>
-        <option *ngFor="let model of models" [value]="model.id">{{model.name}}</option>
-      </select>
     </div>
 
     <h2>Функции</h2>
     <div class="checkbox" *ngFor="let feature of features">
       <label [for]="'feature' + feature.id">
-        <input type="checkbox" [id]="'feature' + feature.id"> {{ feature.name }}
+        <input type="checkbox" [id]="'feature' + feature.id" (change)="onFeatureToggle(feature.id, $event)"> {{ feature.name }}
       </label>
     </div>
+
+      <h2>Контакты:</h2>
+      <div class="form-group">
+          <label for="contactName">Имя:</label>
+          <input type="text" id="contactName" class="form-control" [(ngModel)]="vehicle.contact.name" name="contactName">
+      </div>
+      <div class="form-group">
+          <label for="phone">Телефон:</label>
+          <input type="number" id="phone" class="form-control" [(ngModel)]="vehicle.contact.phone" name="contactPhone">
+      </div>
+      <div class="form-group">
+          <label for="email">Email:</label>
+          <input type="email" id="email" class="form-control" [(ngModel)]="vehicle.contact.email" name="contactEmail">
+      </div>
+
+      <button type="submit" class="btn btn-primary">Сохранить</button>
   </form>
-
-  <h2>Контакты:</h2>
-  <div class="form-group">
-    <label for="contactName">Имя:</label>
-    <input type="text" id="contactName" class="form-control">
-  </div>
-  <div class="form-group">
-    <label for="phone">Телефон:</label>
-    <input type="number" id="phone" class="form-control">
-  </div>
-  <div class="form-group">
-    <label for="email">Email:</label>
-    <input type="email" id="email" class="form-control">
-  </div>
-
-  <button class="btn btn-primary">Сохранить</button>
+  
 </div>

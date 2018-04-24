@@ -1,8 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using CarsCore.Models;
 
 namespace CarsCore.Controllers.Resources
 {
@@ -19,15 +16,8 @@ namespace CarsCore.Controllers.Resources
 
         public SaveVehicleResource()
         {
-            this.Features = new List<int>();
+            Features = new List<int>();
         }
 
-        public SaveVehicleResource(Vehicle vehicle)
-        {
-            this.Id = vehicle.Id;
-            this.ModelId = vehicle.ModelId;
-            this.IsRegistered = vehicle.IsRegistered;
-            this.Features = vehicle.Features.Select(f => f.FeatureId).ToList();
-        }
     }
 }

@@ -28,7 +28,7 @@ namespace CarsCore.Models
 
         public Vehicle()
         {
-            this.Features = new List<VehicleFeature>();
+            Features = new List<VehicleFeature>();
         }
     }
 }

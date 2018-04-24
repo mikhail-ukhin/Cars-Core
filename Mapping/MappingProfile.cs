@@ -23,7 +23,7 @@ namespace CarsCore.Mapping
             CreateMap<Vehicle, SaveVehicleResource>()
 
             .ForMember(dest => dest.Contact, opt => opt.MapFrom(vr => new ContactResource() { Name = vr.ContactName, Email = vr.ContactEmail, Phone = vr.ContactPhone }))
-            .ForMember(vr => vr.Features, opt => opt.MapFrom(v => v.Features.Select(vf => new KeyValuePairResource() { Id = vf.Feature.Id, Name = vf.Feature.Name })))
+            .ForMember(vr => vr.Features, opt => opt.MapFrom(v => v.Features.Select(vf => vf.FeatureId)))
 
             .ReverseMap()
 
@@ -32,13 +32,16 @@ namespace CarsCore.Mapping
             .ForMember(v => v.ContactEmail, opt => opt.MapFrom(vr => vr.Contact.Email))
             .ForMember(v => v.ContactPhone, opt => opt.MapFrom(vr => vr.Contact.Phone))
             .ForMember(v => v.Features, opt => opt.Ignore())
+
             .AfterMap((vr, v) =>
             {
                 var unselectedFeatures = v.Features.Where(f => !vr.Features.Contains(f.FeatureId)).ToList();
+
                 foreach (var feature in unselectedFeatures)
                     v.Features.Remove(feature);
 
                 var addedFeatures = vr.Features.Where(id => !v.Features.Any(f => f.FeatureId == id)).Select(id => new VehicleFeature() { FeatureId = id });
+
                 foreach (var feature in addedFeatures)
                 {
                     v.Features.Add(feature);

@@ -4,10 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using CarsCore.Controllers.Resources;
+using CarsCore.Core;
 using CarsCore.Models;
-using CarsCore.Persistance;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace CarsCore.Controllers
 {
@@ -17,13 +16,13 @@ namespace CarsCore.Controllers
     [Route("/api/[controller]")]
     public class VehiclesController : Controller
     {
-        private readonly CarsDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IUnitOfWork _uow;
 
-        public VehiclesController(CarsDbContext context, IMapper mapper)
+        public VehiclesController(IMapper mapper, IUnitOfWork unitOfWork)
         {
-            _context = context;
             _mapper = mapper;
+            _uow = unitOfWork;
         }
 
         /// <summary>
@@ -37,7 +36,7 @@ namespace CarsCore.Controllers
         [HttpGet("features")]
         public async Task<IActionResult> GetFeatures()
         {
-            var features = await _context.Features.ToListAsync();
+            var features = await _uow.Features.GetAllAsync();
 
             if (!features.Any())
                 return NotFound();
@@ -56,7 +55,7 @@ namespace CarsCore.Controllers
         [HttpGet("makes")]
         public async Task<IActionResult> GetMakes()
         {
-            var makes = await _context.Makes.Include(m => m.Models).ToListAsync();
+            var makes = await _uow.Makes.GetAllWithModelsAsync();
 
             if (!makes.Any())
                 return NotFound();
@@ -79,7 +78,7 @@ namespace CarsCore.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var model = await _context.Models.FindAsync(vehicleResource.ModelId);
+            var model = await _uow.Models.GetAsync(vehicleResource.ModelId);
 
             if (model == null)
             {
@@ -89,10 +88,12 @@ namespace CarsCore.Controllers
             var vehicle = _mapper.Map<SaveVehicleResource, Vehicle>(vehicleResource);
             vehicle.LastUpdate = DateTime.Now;
 
-            await _context.Vehicles.AddAsync(vehicle);
-            await _context.SaveChangesAsync();
+            await _uow.Vehicles.AddAsync(vehicle);
+            await _uow.CompleteAsync();
 
-            return Ok(_mapper.Map<Vehicle, SaveVehicleResource>(vehicle));
+            vehicle = await _uow.Vehicles.GetVehicleWithMakesAndFeaturesAsync(vehicle.Id);
+
+            return Ok(_mapper.Map<Vehicle, VehicleResource>(vehicle));
         }
 
         /// <summary>
@@ -111,17 +112,15 @@ namespace CarsCore.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var vehicle = await _context.Vehicles
-            .Include(f => f.Features)
-            .SingleOrDefaultAsync(v => v.Id == vehicleId);
+            var vehicle = await _uow.Vehicles.GetVehicleWithMakesAndFeaturesAsync(vehicleId);
 
             if (vehicle == null)
             {
                 return NotFound();
             }
 
-            _mapper.Map<SaveVehicleResource, Vehicle>(vehicleResource, vehicle);
-            await _context.SaveChangesAsync();
+            _mapper.Map(vehicleResource, vehicle);
+            await _uow.CompleteAsync();
 
             return Ok(vehicleId);
         }
@@ -129,20 +128,24 @@ namespace CarsCore.Controllers
         /// <summary>
         /// Удалить запись об автомобиле
         /// </summary>
-        /// <param name="vehicleId">Id аавтомобиля</param>
-        /// <returns>Id автомобиля</returns>
+        /// <param name="vehicleId">Id автомобиля</param>
+        /// <returns>
+        /// <response code="200">Id удаленного автомобиля</response>
+        /// <response code="404">Автомобиль не найден</response>
+        /// <response code="500">Информации об исключении</response>
+        /// </returns>
         [HttpDelete("{vehicleId:int}")]
         public async Task<IActionResult> DeleteVehicle(int vehicleId)
         {
-            var vehicle = await _context.Vehicles.FindAsync(vehicleId);
+            var vehicle = await _uow.Vehicles.GetAsync(vehicleId);
 
             if (vehicle == null)
             {
                 return NotFound();
             }
 
-            _context.Remove(vehicle);
-            await _context.SaveChangesAsync();
+            _uow.Vehicles.Remove(vehicle);
+            await _uow.CompleteAsync();
 
             return Ok(vehicleId);
         }
@@ -151,16 +154,15 @@ namespace CarsCore.Controllers
         /// Получить информацию об автомобиле по id
         /// </summary>
         /// <param name="vehicleId">Id автомобиля</param>
-        /// <returns>Dto объект, содержащий информацию об автомобиле</returns>
+        /// <returns>
+        /// <response code="200">Dto объект с информацией об автомобиле</response>
+        /// <response code="404">Автомобиль не найден</response>
+        /// <response code="500">Информации об исключении</response>
+        /// </returns>
         [HttpGet("{vehicleId:int}")]
         public async Task<IActionResult> GetVehicle(int vehicleId)
         {
-            var vehicle = await _context.Vehicles
-                .Include(v => v.Features)
-                .ThenInclude(vf => vf.Feature)
-                .Include(v => v.Model)
-                .ThenInclude(m => m.Make)
-                .SingleOrDefaultAsync(v => v.Id == vehicleId);
+            var vehicle = await _uow.Vehicles.GetVehicleWithMakesAndFeaturesAsync(vehicleId);
 
             if (vehicle == null)
                 return NotFound();

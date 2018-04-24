@@ -10,6 +10,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using AutoMapper;
+using CarsCore.Core;
+using CarsCore.Persistance.Repositories;
 
 namespace CarsCore
 {
@@ -26,6 +28,13 @@ namespace CarsCore
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+
+            services.AddScoped<IVehiclesRepository, VehicleRepository>();
+            services.AddScoped<IMakesRepository, MakesRepository>();
+            services.AddScoped<IFeaturesRepository, FeaturesRepository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+
             services.AddDbContext<CarsDbContext>(options => {
                 options.UseSqlServer(Configuration.GetConnectionString("Default"));
             });
