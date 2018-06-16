@@ -17,10 +17,12 @@ const treeShakableModules = [
 const nonTreeShakableModules = [
     'bootstrap',
     'bootstrap/dist/css/bootstrap.css',
+    'ng2-toastr/ng2-toastr.css',
     'es6-promise',
     'es6-shim',
     'event-source-polyfill',
     'jquery',
+    'raven-js'
 ];
 const allModules = treeShakableModules.concat(nonTreeShakableModules);
 

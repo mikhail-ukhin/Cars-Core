@@ -1,14 +1,17 @@
 <h1>Добавить автомобиль:</h1>
 
 <div style="margin:40px 0 0 0">
-    <p> {{ vehicle | json }}</p>
-  <form (ngSubmit)="onSubmit()">
+
+  <form (ngSubmit)="onSubmit()" #form="ngForm">
     <div class="form-group">
       <label for="make">Производитель</label>
-      <select id="make" name="makeId" class="form-control" (change)="onMakeChange()" [(ngModel)]="vehicle.makeId">
+      <select id="make" name="makeId" class="form-control" (change)="onMakeChange()" [(ngModel)]="vehicle.makeId" required #make="ngModel">
         <option value="" disabled selected>Выберите производителя</option>
         <option *ngFor="let make of makes" [value]="make.id">{{make.name}}</option>
       </select>
+      <div class="alert alert-danger" *ngIf="make.touched && !make.valid">
+          Пожалуйста, выберите производителя.
+      </div>
     </div>
 
     <div class="form-group">
@@ -42,18 +45,31 @@
       <h2>Контакты:</h2>
       <div class="form-group">
           <label for="contactName">Имя:</label>
-          <input type="text" id="contactName" class="form-control" [(ngModel)]="vehicle.contact.name" name="contactName">
+          <input type="text" id="contactName" class="form-control" [(ngModel)]="vehicle.contact.name" name="contactName" required #contactName="ngModel">
+
+          <div class="alert alert-danger" *ngIf="contactName.touched && !contactName.valid">
+              Пожалуйста, введите имя.
+          </div>
       </div>
+
       <div class="form-group">
           <label for="phone">Телефон:</label>
-          <input type="number" id="phone" class="form-control" [(ngModel)]="vehicle.contact.phone" name="contactPhone">
+          <input type="number" id="phone" class="form-control" [(ngModel)]="vehicle.contact.phone" name="contactPhone" required #contactPhone="ngModel">
+
+          <div class="alert alert-danger" *ngIf="contactPhone.touched && !contactPhone.valid">
+              Пожалуйста, введите номер телефона.
+          </div>
       </div>
       <div class="form-group">
           <label for="email">Email:</label>
-          <input type="email" id="email" class="form-control" [(ngModel)]="vehicle.contact.email" name="contactEmail">
+          <input type="email" id="email" class="form-control" [(ngModel)]="vehicle.contact.email" name="contactEmail" required #contactEmail="ngModel">
+
+          <div class="alert alert-danger" *ngIf="contactEmail.touched && !contactEmail.valid">
+              Пожалуйста, введите адрес электронной почты.
+          </div>
       </div>
 
-      <button type="submit" class="btn btn-primary">Сохранить</button>
+      <button type="submit" class="btn btn-primary" [disabled]="!form.valid">Сохранить</button>
   </form>
   
 </div>

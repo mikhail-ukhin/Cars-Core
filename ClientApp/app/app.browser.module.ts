@@ -3,11 +3,14 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppModuleShared } from './app.shared.module';
 import { AppComponent } from './components/app/app.component';
 
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+
 @NgModule({
     bootstrap: [ AppComponent ],
     imports: [
         BrowserModule,
-        AppModuleShared
+        AppModuleShared,
+        BrowserAnimationsModule
     ],
     providers: [
         { provide: 'BASE_URL', useFactory: getBaseUrl }
